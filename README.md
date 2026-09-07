@@ -85,10 +85,14 @@ Do this only after the certificate exists, and keep ssh open to yourself.
 
 ## When the warehouse system moves in
 
-**Make this repository private first**, or move the warehouse system into its
-own private one. The homepage is fine in the open; the warehouse system is your
-stock, your suppliers and your customers, and its source would say a great deal
-about all three.
+The warehouse system lives in its own repository, `Protevio/nefwams`, which
+must be **private**. The homepage is fine in the open; the warehouse system is
+your stock, your suppliers and your customers, and its source would say a great
+deal about all three.
+
+It deploys itself the same way this does, into `/srv/nefwarehouse/wms`, and
+`infra/docker-compose.yml` here builds it from there. The two repositories share
+one deploy key and the same three secrets.
 
 
 The landing page owns the root and its own two images. Everything else on the

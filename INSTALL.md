@@ -73,7 +73,9 @@ git commit -m "Landing page, Caddy, compose"
 git push
 ```
 
-**The warehouse system** — create a new **private** repository on GitHub, then:
+**The warehouse system** — `Protevio/nefwams`. Check it is set to **private**
+before the first push: Settings → General → Danger Zone → Change visibility.
+Then:
 
 ```powershell
 cd C:\dev\namdhari-wms
@@ -81,7 +83,7 @@ git init
 git add -A
 git commit -m "Warehouse system"
 git branch -M main
-git remote add origin https://github.com/Protevio/namdhari-wms.git
+git remote add origin https://github.com/Protevio/nefwams.git
 git push -u origin main
 ```
 
@@ -154,7 +156,7 @@ curl.exe -I https://nefwarehouse.com
 `HTTP/2 200`. Until the warehouse system is up, `/login` answers 502 — correct,
 nothing is behind it yet.
 
-**Then the warehouse system.** In the private repository: Actions → Deploy →
+**Then the warehouse system.** In `Protevio/nefwams`: Actions → Deploy →
 Run workflow. It typechecks, tests and builds on GitHub first, so a broken build
 never reaches the server. Then it copies the source up, builds the image there,
 and waits for the app to answer its own health check before calling it done.
@@ -204,7 +206,9 @@ file in a folder on that machine does not.
 
 ## Day to day
 
-`git push` in either repository. That is the whole deployment.
+`git push` in either repository — `nefwarehouse` for the landing page and the
+server configuration, `nefwams` for the warehouse system. That is the whole
+deployment.
 
 ```powershell
 # what is running
