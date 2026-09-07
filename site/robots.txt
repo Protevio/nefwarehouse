@@ -1,0 +1,4 @@
+# The landing page is worth finding. Nothing behind it is.
+User-agent: *
+Allow: /$
+Disallow: /

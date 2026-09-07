@@ -1,0 +1,85 @@
+# A push to main puts the site live.
+#
+# Static files, so there is nothing to build and nothing to restart — the deploy
+# is a file copy and Caddy serves whatever is on disk. That is the point of
+# keeping the homepage dependency-free: the pipeline this proves is the one the
+# warehouse system will use, and proving it with a page that cannot fail to
+# compile means a red run is always a real problem.
+
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "README.md"
+      - ".gitignore"
+  workflow_dispatch:
+
+# A second push while the first is still copying would interleave two rsyncs
+# over the same folder. Queue them instead.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Unlock the server
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          # Pinned rather than accepted blindly: StrictHostKeyChecking=no would
+          # hand the site to anyone who could answer on that address.
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Copy the site
+        env:
+          HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          rsync -rlpt --delete --checksum \
+            -e "ssh -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes" \
+            site/ "deploy@${HOST}:/srv/nefwarehouse/site/"
+
+      - name: Copy the server configuration
+        env:
+          HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          rsync -rlpt --checksum \
+            -e "ssh -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes" \
+            infra/ "deploy@${HOST}:/srv/nefwarehouse/infra/"
+
+      - name: Start or reload Caddy
+        env:
+          HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          # Reload rather than restart: a restart drops live connections and
+          # makes Caddy re-check certificates it already holds.
+          # Named services only. The warehouse system is deployed from its own
+          # repository, and naming it here would make this workflow try to
+          # build it — which fails before that repository has ever been pushed.
+          ssh -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes "deploy@${HOST}" '
+            set -euo pipefail
+            cd /srv/nefwarehouse/infra
+            docker compose up -d postgres caddy
+            docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile
+          '
+
+      - name: Check it answers
+        env:
+          HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          # From inside the server, so this passes before DNS has propagated and
+          # still fails if the container is not actually serving.
+          ssh -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes "deploy@${HOST}" \
+            'curl -fsS -o /dev/null -w "%{http_code}\n" -H "Host: nefwarehouse.com" http://localhost/'

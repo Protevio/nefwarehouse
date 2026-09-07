@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Namdhari's Euro Fresh — Breda</title>
+<meta name="description" content="Thai fruit and vegetables, flown in and held cold in Breda.">
+<link rel="icon" href="/icon.png">
+<meta name="theme-color" content="#14181A">
+
+<!--
+  Two doors on one wall.
+
+  The split is not decoration: it is the building. One side faces out to the
+  growers in Thailand and the customers here, the other faces in to the cold
+  store on Takkebijsters. Each side wears the colour of the system behind it —
+  the red of the apple in the mark for the partners, the near-black of the
+  warehouse system's own sidebar for the floor — so anyone who already uses one
+  of them recognises their door before they read the word.
+
+  Neither goes anywhere yet. That is deliberate; they widen under the cursor to
+  show they will.
+-->
+
+<style>
+  :root {
+    --ink:      #14181A;  /* the warehouse system's sidebar */
+    --paper:    #FAFAF9;
+    --apple:    #C7362F;  /* the mark */
+    --forest:   #3F7A55;  /* the warehouse system's accent */
+    --sub:      #6E7873;
+    --sub-dark: #9BA5A0;
+    --seam:     #FFFFFF;
+
+    --shell: clamp(1.5rem, 4vw, 4.5rem);
+    /* How far the words stay back from the seam, so nothing ever runs under
+       the mark. Slightly wider than the pool of light it sits in. */
+    --clearance: clamp(2.5rem, 12vw, 15rem);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--ink);
+    color: var(--ink);
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wall {
+    position: relative;
+    display: flex;
+    min-height: 100svh;
+    overflow: hidden;
+  }
+
+  /* ── the two halves ─────────────────────────────────────────────────── */
+
+  .door {
+    position: relative;
+    flex: 1 1 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: calc(var(--shell) * 1.4) var(--shell);
+    overflow: hidden;
+    transition: flex-grow 620ms cubic-bezier(.2, .8, .2, 1);
+    will-change: flex-grow;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .door:focus-visible { outline: none; }
+  .door:focus-visible .word { text-decoration: underline; text-underline-offset: .12em; text-decoration-thickness: .06em; }
+
+  .door--out  { background: var(--paper); color: var(--ink);  padding-right: var(--clearance); }
+  .door--in   { background: var(--ink);   color: #FFFFFF;      padding-left:  var(--clearance); }
+
+  /* Daylight through an open dock door, drifting slowly. The only motion on
+     the page that nobody asked for, and it is almost imperceptible. */
+  .door--out::before {
+    content: "";
+    position: absolute;
+    inset: -30%;
+    background: radial-gradient(50% 45% at 30% 35%, rgba(199, 54, 47, .085), transparent 72%);
+    animation: drift 26s ease-in-out infinite alternate;
+  }
+
+  /* The racking, seen end-on. Ties the cold side to what is actually in it. */
+  .door--in::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 1px, transparent 1px 92px),
+      repeating-linear-gradient(0deg,  rgba(255,255,255,.05) 0 1px, transparent 1px 132px);
+    mask-image: radial-gradient(80% 70% at 70% 50%, #000 20%, transparent 100%);
+    -webkit-mask-image: radial-gradient(80% 70% at 70% 50%, #000 20%, transparent 100%);
+  }
+
+  @keyframes drift {
+    from { transform: translate3d(-3%, -2%, 0) scale(1);    }
+    to   { transform: translate3d(4%, 3%, 0)   scale(1.08); }
+  }
+
+  .door > .body { position: relative; display: block; }
+
+  /* ── words ──────────────────────────────────────────────────────────── */
+
+  .offscreen {
+    position: absolute;
+    width: 1px; height: 1px;
+    margin: -1px; padding: 0; border: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .word {
+    display: block;
+    margin: 0;
+    font-size: clamp(2.6rem, 5.6vw, 6rem);
+    font-weight: 800;
+    letter-spacing: -.035em;
+    line-height: .92;
+  }
+
+  .door--out .word { color: var(--apple); }
+  .door--in  .word { color: #FFFFFF; }
+
+  .said {
+    margin: 1.1rem 0 0;
+    max-width: 30ch;
+    font-size: clamp(.98rem, 1.15vw, 1.09rem);
+    line-height: 1.6;
+    color: var(--sub);
+  }
+  .door--in .said { color: var(--sub-dark); }
+
+  .go {
+    position: relative;
+    display: inline-block;
+    margin-top: 2rem;
+    padding-bottom: .35rem;
+    font-size: .9375rem;
+    font-weight: 600;
+    letter-spacing: .01em;
+    color: var(--apple);
+  }
+  .door--in .go { color: #8FBF9F; }
+
+  .go::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 2px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 320ms cubic-bezier(.2, .8, .2, 1);
+  }
+  .door:hover .go::after,
+  .door:focus-visible .go::after { transform: scaleX(1); }
+
+  /* ── the seam and the mark ──────────────────────────────────────────── */
+
+  .seam {
+    position: absolute;
+    top: 0; bottom: 0; left: 50%;
+    width: 2px;
+    margin-left: -1px;
+    background: var(--seam);
+    z-index: 1;
+  }
+
+  /* A pool of light where the two doors meet.
+     On the paper side it is white on near-white and disappears entirely; on the
+     dark side it opens a soft gap for the mark to sit in. Same element doing
+     two jobs, which is why the mark stops looking stuck on: it is not on a
+     plate, it is in the light. */
+  .glow {
+    position: absolute;
+    top: 0; bottom: 0; left: 50%;
+    width: clamp(180px, 20vw, 320px);
+    transform: translateX(-50%);
+    z-index: 2;
+    pointer-events: none;
+    /* Tall and narrow: brightest at the mark, thinning to nothing at the top
+       and bottom of the seam. Its half-width always stays inside --clearance,
+       so it can never reach the words. */
+    background: radial-gradient(ellipse 50% 34% at 50% 50%,
+      #FFFFFF 0 12%,
+      rgba(255,255,255,.88) 30%,
+      rgba(255,255,255,.42) 52%,
+      rgba(255,255,255,.12) 72%,
+      rgba(255,255,255,0) 100%);
+  }
+
+  .mark {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 3;
+    line-height: 0;
+  }
+  .mark img {
+    display: block;
+    width: clamp(104px, 12vw, 184px);
+    height: auto;
+    /* The mark already carries a white sticker outline, so it needs lifting off
+       the light rather than boxing in. */
+    filter: drop-shadow(0 10px 22px rgba(20, 24, 26, .16));
+  }
+
+  .foot {
+    position: absolute;
+    left: 0; right: 0; bottom: clamp(1rem, 2.2vw, 1.75rem);
+    z-index: 4;
+    text-align: center;
+    font-size: .75rem;
+    color: #FFFFFF;
+    mix-blend-mode: difference;  /* one line, two backgrounds, legible on both */
+  }
+
+  /* ── one arrival, then nothing ──────────────────────────────────────── */
+
+  .door--out { animation: open-left  900ms cubic-bezier(.2, .85, .2, 1) both; }
+  .door--in  { animation: open-right 900ms cubic-bezier(.2, .85, .2, 1) both; }
+  .seam      { animation: split 700ms cubic-bezier(.4, 0, .2, 1) both; }
+  .mark      { animation: settle 700ms cubic-bezier(.2, .9, .25, 1) 640ms both; }
+  .glow      { animation: bloom  900ms ease-out 560ms both; }
+  .body      { animation: rise 700ms cubic-bezier(.2, .8, .2, 1) 420ms both; }
+  .foot      { animation: rise 700ms ease 900ms both; }
+
+  @keyframes open-left  { from { transform: translate3d(-101%, 0, 0); } to { transform: none; } }
+  @keyframes open-right { from { transform: translate3d(101%, 0, 0);  } to { transform: none; } }
+  @keyframes split      { from { transform: scaleY(0); }               to { transform: none; } }
+  @keyframes settle     { from { opacity: 0; transform: translate(-50%, -50%) scale(.82); }
+                          to   { opacity: 1; transform: translate(-50%, -50%) scale(1);   } }
+  @keyframes bloom      { from { opacity: 0; transform: translateX(-50%) scaleY(.4); }
+                          to   { opacity: 1; transform: translateX(-50%) scaleY(1);  } }
+  @keyframes rise       { from { opacity: 0; transform: translate3d(0, 14px, 0); } to { opacity: 1; transform: none; } }
+
+  /* A cursor over a door widens it. It is the only promise the page makes
+     about the fact that these will open. */
+  @media (min-width: 860px) {
+    .wall:hover .door { flex-grow: .9; }
+    .wall .door:hover,
+    .wall .door:focus-visible { flex-grow: 1.22; }
+  }
+
+  /* ── narrow: one above the other, the mark on the join ──────────────── */
+
+  @media (max-width: 859px) {
+    .wall { flex-direction: column; }
+    .door { flex: 1 1 50%; min-height: 50svh; padding: var(--shell); justify-content: flex-end; }
+    .door--in { justify-content: flex-start; }
+    .door--out { padding-right: var(--shell); padding-bottom: var(--clearance); }
+    .door--in  { padding-left:  var(--shell); padding-top:    var(--clearance); }
+
+    .seam { top: 50%; left: 0; right: 0; bottom: auto; width: auto; height: 2px; margin: -1px 0 0; }
+    .word { font-size: clamp(2.5rem, 13vw, 4.25rem); }
+    .glow {
+      top: 50%; bottom: auto; left: 0;
+      width: 100%;
+      height: clamp(150px, 34vw, 260px);
+      transform: translateY(-50%);
+      background: radial-gradient(ellipse 34% 50% at 50% 50%,
+        #FFFFFF 0 12%,
+        rgba(255,255,255,.88) 30%,
+        rgba(255,255,255,.42) 52%,
+        rgba(255,255,255,.12) 72%,
+        rgba(255,255,255,0) 100%);
+      animation-name: bloom-across;
+    }
+    @keyframes bloom-across { from { opacity: 0; transform: translateY(-50%) scaleX(.4); }
+                              to   { opacity: 1; transform: translateY(-50%) scaleX(1);  } }
+    .said { max-width: 34ch; }
+    .go { margin-top: 1.25rem; }
+
+    .door--out { animation-name: open-up; }
+    .door--in  { animation-name: open-down; }
+    .seam      { animation-name: split-across; }
+
+    @keyframes open-up      { from { transform: translate3d(0, -101%, 0); } to { transform: none; } }
+    @keyframes open-down    { from { transform: translate3d(0, 101%, 0);  } to { transform: none; } }
+    @keyframes split-across { from { transform: scaleX(0); }               to { transform: none; } }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+</style>
+</head>
+
+<body>
+  <main class="wall">
+    <h1 class="offscreen">Namdhari's Euro Fresh, Breda</h1>
+
+    <a class="door door--out" href="/partner">
+      <div class="body">
+        <h2 class="word">Partner</h2>
+        <p class="said">Consignments, quality reports and paperwork, for the growers we buy from and the kitchens we deliver to.</p>
+        <span class="go">Sign in</span>
+      </div>
+    </a>
+
+    <a class="door door--in" href="/login">
+      <div class="body">
+        <h2 class="word">Warehouse</h2>
+        <p class="said">Receiving, stock, picking and dispatch, for the floor and the cold rooms in Breda.</p>
+        <span class="go">Sign in</span>
+      </div>
+    </a>
+
+    <span class="seam" aria-hidden="true"></span>
+    <span class="glow" aria-hidden="true"></span>
+
+    <div class="mark">
+      <img src="/logo.png" alt="Namdhari's, product of Thailand" width="360" height="279">
+    </div>
+
+    <p class="foot">Namdhari's Euro Fresh, Breda</p>
+  </main>
+</body>
+</html>

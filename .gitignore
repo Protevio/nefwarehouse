@@ -1,0 +1,6 @@
+.DS_Store
+*.local
+
+# The real environment files hold the database password. Only the .example
+# versions belong in a repository, and this one is public.
+infra/env/*.env

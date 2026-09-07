@@ -1,0 +1,55 @@
+# Caddy gets the certificates by itself and renews them without being asked.
+# Keep the Cloudflare proxy OFF (grey cloud) until the first certificate is
+# issued: an orange-clouded record answers the ACME challenge itself and Caddy
+# never sees it, which fails in a way that looks like the server is down.
+#
+# No ACME email here on purpose: this repository is public, and an address in a
+# public file is an address that gets scraped. Caddy issues and renews fine
+# without one.
+
+nefwarehouse.com, www.nefwarehouse.com {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		X-Frame-Options DENY
+		-Server
+	}
+
+	# ── the landing page ────────────────────────────────────────────────────
+	#
+	# It owns the root and its own two images, and nothing else. Everything
+	# past that belongs to the warehouse system, which is what makes /partner
+	# and /login real paths on this same host — so the two doors on the page
+	# can link straight to them with no subdomain and no second certificate.
+	@site path / /logo.png /icon.png /favicon.ico /robots.txt
+	handle @site {
+		root * /srv/site
+		file_server
+		header /logo.png Cache-Control "public, max-age=604800"
+		header /icon.png Cache-Control "public, max-age=604800"
+		header / Cache-Control "no-cache"
+	}
+
+	# ── the warehouse system ────────────────────────────────────────────────
+	#
+	# Everything that is not the landing page. /partner and /login are real
+	# paths on this host, which is what lets the two doors on the page link
+	# straight to them with no subdomain and no second certificate.
+	handle {
+		reverse_proxy wms:3000 {
+			# Caddy terminates TLS, so the app would otherwise see plain http
+			# and refuse to set a Secure cookie — sign-in would appear to work
+			# and bounce straight back to the form.
+			header_up X-Forwarded-Proto {scheme}
+			header_up X-Real-IP {remote_host}
+		}
+
+		# Inspection photographs. The default cap is far below a phone camera.
+		request_body {
+			max_size 25MB
+		}
+	}
+}

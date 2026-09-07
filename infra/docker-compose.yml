@@ -1,0 +1,65 @@
+# The whole server, in one file.
+#
+# Three services on one private network. Only Caddy has a port on the outside;
+# the warehouse system is reachable on loopback for health checks, and Postgres
+# is not reachable from outside Docker at all — it does not need to be, and a
+# database with a port open to the internet is a database that gets found.
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"     # HTTP/3
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ../site:/srv/site:ro
+      - caddy_data:/data          # certificates live here — do not delete
+      - caddy_config:/config
+
+  wms:
+    build:
+      context: ../wms
+    container_name: wms
+    restart: unless-stopped
+    env_file: ./env/wms.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      # Photographs. On a volume rather than in the deploy folder, because a
+      # deploy replaces files and evidence must never be in the path of one.
+      - wms_uploads:/app/uploads
+    ports:
+      # Loopback only, so the deploy can ask "are you actually up?" without
+      # opening anything to the world.
+      - "127.0.0.1:8080:3000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      # First boot runs prisma db push and starts Next; give it room.
+      start_period: 90s
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    restart: unless-stopped
+    env_file: ./env/postgres.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  caddy_data:
+  caddy_config:
+  wms_uploads:
+  postgres_data:

@@ -1,0 +1,6 @@
+# Shell scripts must reach the server with Unix line endings. Cloned on
+# Windows without this, bootstrap.sh arrives with carriage returns and bash
+# fails on the first line with an error that names a character you cannot see.
+*.sh text eol=lf
+Caddyfile text eol=lf
+*.yml text eol=lf
