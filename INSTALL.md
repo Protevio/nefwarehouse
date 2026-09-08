@@ -197,7 +197,10 @@ three weeks kept. Nothing else is worth copying — the code is in git and the
 containers are in a Dockerfile.
 
 Run it once by hand now, and then **restore one into a spare database**. A
-backup nobody has ever restored is a hope, not a backup.
+backup nobody has ever restored is a hope, not a backup — and this script has
+already been wrong once, archiving an empty folder every night while reporting
+success. It now refuses to finish if the dump is tiny or if there are
+photographs on disk that did not make it into the archive.
 
 Turn on Hetzner's own backups too. They cover the machine itself going, which a
 file in a folder on that machine does not.
