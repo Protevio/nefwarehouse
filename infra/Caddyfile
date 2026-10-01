@@ -53,3 +53,31 @@ nefwarehouse.com, www.nefwarehouse.com {
 		}
 	}
 }
+
+# ── the customer shop ─────────────────────────────────────────────────────
+#
+# Air orders for customers, served by the same warehouse container. The app
+# looks at the host name and shows only the shop here — none of the warehouse
+# system is reachable on this address. Its own certificate, issued on the
+# first request once the DNS record exists (grey cloud, like the main domain).
+shop.nefwarehouse.com {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		X-Frame-Options DENY
+		-Server
+	}
+
+	reverse_proxy wms:3000 {
+		header_up X-Forwarded-Proto {scheme}
+		header_up X-Real-IP {remote_host}
+	}
+
+	# Product photos are uploaded on the warehouse side; nothing large comes in here.
+	request_body {
+		max_size 2MB
+	}
+}
