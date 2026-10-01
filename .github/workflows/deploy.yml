@@ -72,7 +72,11 @@ jobs:
             set -euo pipefail
             cd /srv/nefwarehouse/infra
             docker compose up -d postgres caddy
-            docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile
+            # --force: reload even when the Caddyfile is unchanged. A forced
+            # reload makes Caddy retry any certificate it failed to get (a new
+            # subdomain whose DNS record was added after the deploy) instead of
+            # waiting out its back-off. Certificates it already holds are kept.
+            docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile --force
           '
 
       - name: Check it answers
