@@ -84,6 +84,9 @@ jobs:
           HOST: ${{ secrets.SSH_HOST }}
         run: |
           # From inside the server, so this passes before DNS has propagated and
-          # still fails if the container is not actually serving.
+          # still fails if the container is not actually serving. Over HTTPS to
+          # the front page itself: plain http only ever answers "go to https",
+          # which passed even while the front page was a 404. -f fails on any
+          # 4xx/5xx; the front page should answer with a redirect to sign-in.
           ssh -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes "deploy@${HOST}" \
-            'curl -fsS -o /dev/null -w "%{http_code}\n" -H "Host: nefwarehouse.com" http://localhost/'
+            'curl -fsS -o /dev/null -w "front page: %{http_code} -> %{redirect_url}\n" --resolve nefwarehouse.com:443:127.0.0.1 https://nefwarehouse.com/'
