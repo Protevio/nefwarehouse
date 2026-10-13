@@ -11,7 +11,7 @@ The customer shop is `shop.nefwarehouse.com`.
 ## What is here
 
     site/                 robots.txt only (keeps search engines out)
-    infra/Caddyfile       hostnames, certificates, headers
+    infra/caddy/Caddyfile hostnames, certificates, headers
     infra/docker-compose.yml
     infra/bootstrap.sh    one-time server setup
     .github/workflows/    push to main, it goes live
@@ -98,7 +98,7 @@ one deploy key and the same three secrets.
 Everything on the host except `/robots.txt` is routed to the warehouse system,
 the root included.
 
-Connecting it is one line: in `infra/Caddyfile`, uncomment `reverse_proxy
+Connecting it is one line: in `infra/caddy/Caddyfile`, uncomment `reverse_proxy
 wms:3000` and delete the `respond` beneath it. Then add the `wms` and
 `postgres` services in `infra/docker-compose.yml`, where they are already
 written out commented. Postgres stays on Docker's internal network with no port

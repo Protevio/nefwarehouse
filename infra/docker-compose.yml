@@ -15,7 +15,12 @@ services:
       - "443:443"
       - "443:443/udp"     # HTTP/3
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # The folder, not the file. A deploy copies a new Caddyfile over the old
+      # one by writing a new file and renaming it; a container with the single
+      # file mounted keeps reading the old one for ever (October 2026: the
+      # welcome page was removed but Caddy kept serving the old config and the
+      # front page answered 404). A mounted folder always shows the new file.
+      - ./caddy:/etc/caddy:ro
       - ../site:/srv/site:ro
       - caddy_data:/data          # certificates live here — do not delete
       - caddy_config:/config
