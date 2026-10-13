@@ -19,8 +19,8 @@ the server.
                     the internet
                          │
                     Caddy  :443           certificates, one hostname
-                     ├── /                the landing page, from disk
-                     └── everything else  → wms :3000
+                     ├── /robots.txt      from disk
+                     └── everything else  → wms :3000 (the root goes to sign-in)
                                               │
                                           postgres    no port to the outside
 ```

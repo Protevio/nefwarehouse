@@ -3,21 +3,21 @@
 The public front door for Namdhari's Euro Fresh, and the deployment the
 warehouse system will move into.
 
-Right now it is one page: a split wall with two doors, **Partner** and
-**Warehouse**. Neither opens yet — they widen under the cursor to say that they
-will.
+There is no welcome page any more (October 2026). `nefwarehouse.com` goes
+straight to the warehouse system: the sign-in page, or straight in when the
+device is already signed in. Thailand's partner accounts land on their own page.
+The customer shop is `shop.nefwarehouse.com`.
 
 ## What is here
 
-    site/                 the page. No build step, no dependencies.
+    site/                 robots.txt only (keeps search engines out)
     infra/Caddyfile       hostnames, certificates, headers
     infra/docker-compose.yml
     infra/bootstrap.sh    one-time server setup
     .github/workflows/    push to main, it goes live
 
-Open `site/index.html` in a browser; that is the whole development setup. The
-homepage is deliberately dependency-free: its job is to prove a server, a
-certificate and a pipeline work, and it should not be the thing that fails.
+The warehouse system and the shop are deployed from their own repository; this
+one holds the server configuration.
 
 ## The server
 
@@ -95,10 +95,8 @@ It deploys itself the same way this does, into `/srv/nefwarehouse/wms`, and
 one deploy key and the same three secrets.
 
 
-The landing page owns the root and its own two images. Everything else on the
-host is already routed to the warehouse system, so `/partner` and `/login` are
-real paths and the two doors on the page point at them today — they answer with
-a 503 until the service exists.
+Everything on the host except `/robots.txt` is routed to the warehouse system,
+the root included.
 
 Connecting it is one line: in `infra/Caddyfile`, uncomment `reverse_proxy
 wms:3000` and delete the `respond` beneath it. Then add the `wms` and

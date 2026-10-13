@@ -18,26 +18,22 @@ nefwarehouse.com, www.nefwarehouse.com {
 		-Server
 	}
 
-	# ── the landing page ────────────────────────────────────────────────────
+	# ── robots.txt ──────────────────────────────────────────────────────────
 	#
-	# It owns the root and its own two images, and nothing else. Everything
-	# past that belongs to the warehouse system, which is what makes /partner
-	# and /login real paths on this same host — so the two doors on the page
-	# can link straight to them with no subdomain and no second certificate.
-	@site path / /logo.png /icon.png /favicon.ico /robots.txt
+	# The welcome page with its two doors is gone (October 2026): the address
+	# goes straight to the warehouse system, which sends you to the sign-in
+	# page or, if this device is already signed in, straight in (Thailand's
+	# partner accounts to their own page). Only robots.txt is still served
+	# from here, so search engines keep out.
+	@site path /robots.txt
 	handle @site {
 		root * /srv/site
 		file_server
-		header /logo.png Cache-Control "public, max-age=604800"
-		header /icon.png Cache-Control "public, max-age=604800"
-		header / Cache-Control "no-cache"
 	}
 
 	# ── the warehouse system ────────────────────────────────────────────────
 	#
-	# Everything that is not the landing page. /partner and /login are real
-	# paths on this host, which is what lets the two doors on the page link
-	# straight to them with no subdomain and no second certificate.
+	# Everything else, the root included.
 	handle {
 		reverse_proxy wms:3000 {
 			# Caddy terminates TLS, so the app would otherwise see plain http
